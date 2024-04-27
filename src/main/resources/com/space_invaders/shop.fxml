@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.space_invaders.ShopController" alignment="CENTER">
+    <VBox alignment="CENTER" spacing='40'>
+        <Button fx:id="backButton" text='Back to main menu'></Button>
+        <VBox alignment="CENTER" fx:id="turretBox" spacing='20' style="-fx-padding: 10 10 10 10;"></VBox>
+    </VBox>
+
+</HBox>
