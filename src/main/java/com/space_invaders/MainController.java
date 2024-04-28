@@ -4,13 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.space_invaders.Game.GameLoop;
-import com.space_invaders.Ships.BossShip;
-import com.space_invaders.Ships.EnemyShip;
-import com.space_invaders.Ships.PlayerShip;
-import com.space_invaders.Ships.Ship;
-import com.space_invaders.Ships.StormShip;
 import javafx.animation.AnimationTimer;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -20,10 +14,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 
 import javafx.scene.layout.HBox;
-import javafx.util.Duration;
 
 public class MainController {
-
+    //To stop game you have to stop the gameLoop, and clear the field
     @FXML
     private AnchorPane field;
 
@@ -33,14 +26,10 @@ public class MainController {
 
     private Label scoreLabel;
 
-    private AnimationTimer timer;
-
-    private Timeline timeline;
+    private GameLoop gameLoop;
 
     private Game game;
-    
     public void initialize() {
-        
         game = new Game(field);
 
         loadBackToManuButton();
@@ -52,7 +41,7 @@ public class MainController {
         if(Game.isTurretBought){
             field.getChildren().add(turret);
         }
-        GameLoop gameLoop = game.new GameLoop(){
+        gameLoop = game.new GameLoop(){
             @Override
             public void handle(long now) {
                 super.handle(now);
@@ -111,97 +100,9 @@ public class MainController {
         }
     }
 
-
-    // private void spawnRandomEnemyShip() {
-    //     int randomXCoord = (int) (Math.random() * Constants.Game.FIELD_WIDTH);
-    //     int randomInt = (int) (Math.random() * 20);
-    //     if(randomInt < 19){
-    //         EnemyShip ship = new StormShip(randomXCoord, -StormShip.size);
-    //         field.getChildren().add(ship);
-    //         ships.add(ship);
-    //     } else {
-    //         EnemyShip ship = new BossShip(randomXCoord, -BossShip.size);
-    //         field.getChildren().add(ship);
-    //         ships.add(ship);
-    //     }
-    // }
-
-    // public void checkCollision() {
-    //     for (Bullet bullet : bullets) {
-    //         for (Ship ship : ships) {
-    //             if (ship.getBoundsInParent().intersects(bullet.getBoundsInParent())) {
-    //                 if(ship instanceof EnemyShip && (bullet.direction == Direction.UP || bullet.direction == Direction.CUSTOM)){
-    //                     ship.hit();
-    //                     removeBullet(bullet);
-    //                 }
-    //                 else if(ship instanceof PlayerShip && bullet.direction == Direction.DOWN){
-    //                     ship.hit();
-    //                     removeBullet(bullet);
-
-    //                     if(playerShip.getHp() >= 0 && !hpImages.isEmpty()) {
-    //                         ImageView lastHeart = hpImages.remove(hpImages.size() - 1);
-    //                         field.getChildren().remove(lastHeart);
-    //                     }
-    
-    //                     if(playerShip.getHp() == 0){
-    //                         endGame();
-    //                     }  
-    //                 }
-    //                 else{
-    //                     continue;
-    //                 }
-                    
-    //             }
-    //         }
-    //     }
-    // }
-
-    // private void endGame(){
-    //     isGameEnded = true;
-    //     clear();
-
-    //     Label gameOverLabel = new Label("Game Over");
-    //     gameOverLabel.setStyle("-fx-font-size: 32; -fx-text-fill: white; -fx-font-weight: bold;");
-    //     gameOverLabel.setLayoutX(Constants.Game.FIELD_WIDTH/2 - 100);
-    //     gameOverLabel.setLayoutY(300);
-
-    //     Button restartButton = new Button("Restart");
-    //     restartButton.setLayoutX(Constants.Game.FIELD_WIDTH/2 - 50);
-    //     restartButton.setLayoutY(400);
-    //     restartButton.setOnAction(event -> {
-    //         isGameEnded = false;
-    //         field.getChildren().clear();
-    //         initialize();
-    //     });
-
-
-        
-    //     field.getChildren().addAll(gameOverLabel, restartButton);
-        
-    // }
-
     public void clear(){
-        timer.stop();
-        timeline.stop();
+        gameLoop.stop();    
         field.getChildren().clear();
     }
 
-    // public static void removeBullet(Bullet bullet) {
-    //     if(!bullets.contains(bullet) ) return;
-    //     bullets.remove(bullet);
-    //     AnchorPane parent  = (AnchorPane)  bullet.getParent();
-    //     parent.getChildren().remove(bullet);
-    // }
-
-    // public static void addBullet(Bullet bullet) {
-    //     bullets.add(bullet);
-        
-        
-    // }
-
-    // public static void removeShip(Ship ship) {
-    //     if(!ships.contains(ship) ) return;
-    //     ships.remove(ship);
-    //     ((AnchorPane) ship.getParent()).getChildren().remove(ship);
-    // }
 }

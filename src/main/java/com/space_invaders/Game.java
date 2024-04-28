@@ -27,10 +27,12 @@ public class Game {
 
     public static List<Bullet> bullets = new ArrayList<>();
 
+    @SuppressWarnings("exports")
     public AnimationTimer gameLoop;
 
     public Turret turret;
 
+    @SuppressWarnings("exports")
     public AnchorPane field;
 
     private long lastCheckTime = 0;
@@ -38,6 +40,8 @@ public class Game {
     private Timeline enemySpawnTimer;
 
     Game(AnchorPane field){
+        this.field = field;
+
         loadPlayerShip();
 
         Turret turret = new Turret( 50, Constants.Game.FIELD_HEIGHT-100);
@@ -69,6 +73,11 @@ public class Game {
                 lastCheckTime = now;
             }
             checkCollision();
+        }
+
+        public void stopGame(){
+            enemySpawnTimer.stop();
+            gameLoop.stop();
         }
     }
 
