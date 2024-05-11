@@ -37,14 +37,13 @@ public class MainController {
         loadHeartImages();
 
         loadScore();
-        Turret turret = new Turret( 50, Constants.Game.FIELD_HEIGHT-100);
-        if(Game.isTurretBought){
-            field.getChildren().add(turret);
-        }
+
+
         gameLoop = game.new GameLoop(){
             @Override
             public void handle(long now) {
                 super.handle(now);
+                updateHeartImages();
                 scoreLabel.setText(String.valueOf(App.getCoins()));
                 
             }
@@ -54,13 +53,24 @@ public class MainController {
 
     }
 
+    public void updateHeartImages(){
+        for (int i = 0; i < hpImages.size(); i++) {
+            if(i >= game.playerShip.getHp()){
+                field.getChildren().remove(hpImages.get(i));
+            }
+        }
+    }
+
     private void loadBackToManuButton(){
         Button backButton = new Button("Back to Menu");
         backButton.setLayoutX(20);
         backButton.setLayoutY(20);
         backButton.setOnAction(e -> {
+            Game.bullets.clear();
+            Game.ships.clear();
+            field.getChildren().clear(); 
+            gameLoop.stopGame();
             try{
-                clear();
                 App.setRoot("main-menu.fxml");
             }catch(Exception ex){
                 ex.printStackTrace();
@@ -100,9 +110,5 @@ public class MainController {
         }
     }
 
-    public void clear(){
-        gameLoop.stop();    
-        field.getChildren().clear();
-    }
 
 }

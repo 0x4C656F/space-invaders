@@ -1,7 +1,12 @@
 package com.space_invaders;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import javafx.scene.Node;
 import com.space_invaders.Ships.BossShip;
 import com.space_invaders.Ships.EnemyShip;
 import com.space_invaders.Ships.PlayerShip;
@@ -11,6 +16,7 @@ import com.space_invaders.Ships.StormShip;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.geometry.Bounds;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -18,66 +24,84 @@ import javafx.util.Duration;
 
 public class Game {
     public static boolean isTurretBought = false;
-
     public PlayerShip playerShip;
-    
     public static boolean isGameEnded = false;
-
     public static List<Ship> ships = new ArrayList<>();
-
     public static List<Bullet> bullets = new ArrayList<>();
-
     @SuppressWarnings("exports")
     public AnimationTimer gameLoop;
-
     public Turret turret;
-
     @SuppressWarnings("exports")
     public AnchorPane field;
-
     private long lastCheckTime = 0;
-
     private Timeline enemySpawnTimer;
 
     Game(AnchorPane field){
         this.field = field;
 
         loadPlayerShip();
+        loadTurret();
 
-        Turret turret = new Turret( 50, Constants.Game.FIELD_HEIGHT-100);
+        if (playerShip == null || turret == null) {
+            System.out.println("Initialization error: Objects not set up correctly.");
+            return;
+        }
+
+        field.setFocusTraversable(true);
+        field.requestFocus();
+
+        System.out.println("Game initialized");
+        System.out.println("Ships: " + ships);
+        System.out.println("Bullets: " + bullets);
+
+        
+    }
+
+    public void loadTurret(){
+        turret = new Turret( 50, Constants.Game.FIELD_HEIGHT-100);
         if(isTurretBought){
             field.getChildren().add(turret);
         }
-        this.field = field;
-        ships.add(playerShip);
+    }
+
+    private void loadEnemySpawnTimer(){
         enemySpawnTimer = new Timeline(new KeyFrame(Duration.seconds(1.5), event -> {
             spawnRandomEnemyShip();
         }));
-
         enemySpawnTimer.setCycleCount(Timeline.INDEFINITE);
         enemySpawnTimer.play();
     }
 
 
+    // This part is fabulous, it encapsulates the game loop and the game logic,
+    // but allows other classes to override it and add their own logic.
     public abstract class GameLoop extends AnimationTimer{
+
+        GameLoop(){
+            super();
+            loadEnemySpawnTimer();
+        }
+
         @Override
         public void handle(long now) {
             if(playerShip.getHp() <= 0) {
-                enemySpawnTimer.stop();
-                gameLoop.stop();    
+                stopGame();
+                endGame();
                 return;
             };
-
             if (now - lastCheckTime > 300_000_000 && isTurretBought  ) { 
                 turret.checkInterception();
                 lastCheckTime = now;
             }
             checkCollision();
         }
-
+        
         public void stopGame(){
-            enemySpawnTimer.stop();
-            gameLoop.stop();
+            if(this != null && enemySpawnTimer !=null){
+                enemySpawnTimer.stop();
+                this.stop();
+            }
+            
         }
     }
 
@@ -87,15 +111,13 @@ public class Game {
         ships.add(playerShip);
 
         field.getChildren().add(playerShip);
-        field.setFocusTraversable(true);
-        field.requestFocus();
         field.setOnKeyReleased(playerShip.new OverrideControls());
         
     }
     private void spawnRandomEnemyShip() {
         int randomXCoord = (int) (Math.random() * Constants.Game.FIELD_WIDTH);
         int randomInt = (int) (Math.random() * 20);
-        if(randomInt < 19){
+        if(randomInt < 18){
             EnemyShip ship = new StormShip(randomXCoord, -StormShip.size);
             field.getChildren().add(ship);
             ships.add(ship);
@@ -106,44 +128,62 @@ public class Game {
         }
     }
 
-    public void checkCollision() {
-        for (Bullet bullet : bullets) {
-            for (Ship ship : ships) {
-                if (ship.getBoundsInParent().intersects(bullet.getBoundsInParent())) {
-                    if(ship instanceof EnemyShip && (bullet.direction == Direction.UP || bullet.direction == Direction.CUSTOM)){
-                        ship.hit();
-                        removeBullet(bullet);
-                    }
-                    else if(ship instanceof PlayerShip && bullet.direction == Direction.DOWN){
-                        ship.hit();
-                        removeBullet(bullet);
-                    }
-                    else{
-                        continue;
-                    }
-                    
+public void checkCollision() {
+    Set<Bullet> bulletsToRemove = new HashSet<>();
+    for (Bullet bullet : bullets) {
+        if (bullet.hasHit) continue;
+
+        for (Ship ship : ships) {
+            if (bullet.hasHit) break; 
+
+            Bounds bulletBounds = bullet.getBoundsInParent();
+            Bounds shipBounds = ship.getBoundsInParent();
+
+            if (shipBounds.intersects(bulletBounds)) {
+                boolean isEnemyShip = ship instanceof EnemyShip;
+                boolean isPlayerShip = ship instanceof PlayerShip;
+                boolean bulletUpOrCustom = bullet.direction == Direction.UP || bullet.direction == Direction.CUSTOM;
+                boolean bulletDown = bullet.direction == Direction.DOWN;
+
+                if ((isEnemyShip && bulletUpOrCustom) || (isPlayerShip && bulletDown)) {
+                    System.out.println("Collision detected");
+                    bullet.hasHit = true; 
+                    bulletsToRemove.add(bullet);
+                    ship.hit();
                 }
             }
         }
     }
+    field.getChildren().removeAll(bulletsToRemove); 
+    bullets.removeAll(bulletsToRemove); 
+}
 
-    public static void removeBullet(Bullet bullet) {
-        if(!bullets.contains(bullet) ) return;
+    
+    
+    public  void removeBullet(Bullet bullet) {
+        field.getChildren().remove(bullet);
         bullets.remove(bullet);
+    }
+
+    public static void removeBulletStatic(Bullet bullet){
         AnchorPane parent  = (AnchorPane)  bullet.getParent();
+        if(!bullets.contains(bullet)  ) return;
+        if(parent == null) return;
+        if(!parent.getChildren().contains(bullet)) return;
+        bullets.remove(bullet);
         parent.getChildren().remove(bullet);
     }
 
     public static void addBullet(Bullet bullet) {
         bullets.add(bullet);
-        
-        
     }
 
     public static void removeShip(Ship ship) {
         if(!ships.contains(ship) ) return;
         ships.remove(ship);
-        ((AnchorPane) ship.getParent()).getChildren().remove(ship);
+        AnchorPane parent = (AnchorPane) ship.getParent();
+        if(parent == null) return;
+        parent.getChildren().remove(ship);
     }
 
     private void endGame(){
@@ -160,7 +200,7 @@ public class Game {
         restartButton.setLayoutY(400);
         restartButton.setOnAction(event -> {
             isGameEnded = false;
-            field.getChildren().clear();
+            restartGame();
             
         });
 
@@ -168,11 +208,19 @@ public class Game {
         
     }
 
+    private void restartGame(){
+        try {
+            App.setRoot("main.fxml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void clear(){
-        enemySpawnTimer.stop();
-        gameLoop.stop();
-        field.getChildren().clear();
         ships.clear();
         bullets.clear();
+        field.getChildren().clear();
+
     }
 }
+    

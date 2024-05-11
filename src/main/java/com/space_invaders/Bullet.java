@@ -9,6 +9,7 @@ public class Bullet extends Rectangle {
     public Direction direction;
     public int width;
     private int x;
+    boolean hasHit = false;
     private int y ;
 
 
@@ -32,7 +33,7 @@ public class Bullet extends Rectangle {
                     return;
                 }
                 if (getTranslateY() < - Constants.Game.FIELD_HEIGHT || getTranslateY() > Constants.Game.FIELD_HEIGHT ){
-                    Game.removeBullet(Bullet.this);
+                    Game.removeBulletStatic(Bullet.this);
                     stop();
                 }
                 if(!Game.bullets.contains(Bullet.this)){

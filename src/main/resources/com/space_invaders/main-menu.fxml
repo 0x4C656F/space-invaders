@@ -21,7 +21,7 @@
     </Button>
     <Button fx:id="shopButton" text="Shop" 
             style="-fx-font-size: 14px; 
-                   -fx-background-color: #000; 
+                   -fx-background-color: rgba(30,30,30); 
                    -fx-text-fill: #fff; 
                    -fx-padding: 10px 20px; 
                    -fx-border-radius: 5px; 

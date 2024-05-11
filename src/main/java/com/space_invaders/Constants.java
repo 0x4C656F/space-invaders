@@ -31,7 +31,7 @@ public class Constants {
 
     public static class BossShip {
         public static final int SIZE = 100; // Size of the boss ship
-        public static final int HP = 3; // Health points of the boss ship
+        public static final int HP = 5; // Health points of the boss ship
         public static final int COIN_REWARD = 3; // Coin reward for destroying the boss ship
         public static final int MOVE_SPEED = 20; // Speed of the boss ship
     }

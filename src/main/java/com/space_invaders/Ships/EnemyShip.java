@@ -7,6 +7,7 @@ import java.util.Random;
 import com.space_invaders.App;
 import com.space_invaders.Bullet;
 import com.space_invaders.Direction;
+import com.space_invaders.Game;
 
 import javafx.animation.KeyFrame; 
 import javafx.animation.Timeline;
@@ -23,12 +24,16 @@ public class EnemyShip extends Ship{
 
     public EnemyShip(@SuppressWarnings("exports") Image node, int x, int y, int size) {
         super(node, x, y, size);
-         shootTimeline = new Timeline(new KeyFrame(Duration.seconds(3), event -> {
+        initiateShootingTimeline();
+        initiateRandomMovement();
+    }
+
+    private void initiateShootingTimeline() {
+        shootTimeline = new Timeline(new KeyFrame(Duration.seconds(3), event -> {
             shoot();
         }));
         shootTimeline.setCycleCount(Timeline.INDEFINITE);
         shootTimeline.play();
-        initiateRandomMovement();
     }
 
     private void initiateRandomMovement() {
@@ -83,7 +88,13 @@ public class EnemyShip extends Ship{
         int xCoord = (int) getTranslateX() + size / 2 - bulletWidth/ 2;
         int yCoord = (int) getTranslateY() +  size + bulletWidth * 2;
         Bullet bullet = new Bullet(xCoord, yCoord,bulletWidth, Direction.DOWN);
-        ((AnchorPane)getParent()).getChildren().add(bullet);
+        AnchorPane parent = (AnchorPane)getParent();
+        if(parent == null){
+            return;
+        }
+        parent.getChildren().add(bullet);
+
+        Game.addBullet(bullet);
     }
 
     @Override

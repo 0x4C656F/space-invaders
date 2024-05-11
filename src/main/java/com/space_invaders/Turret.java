@@ -32,10 +32,7 @@ public class Turret extends Group {
         base.setPreserveRatio(true);
 
         laser = new Rectangle(5, Math.sqrt(Math.pow(Constants.Game.FIELD_HEIGHT, 2) + Math.pow(Constants.Game.FIELD_WIDTH, 2)));
-        // laser.setFill(Color.RED);
-        // laser.setStroke(Color.YELLOW);
-        // laser.setStrokeWidth(2); 
-        // laser.setY(y);
+
         laser.setFill(Color.TRANSPARENT);
         laser.setStroke(Color.TRANSPARENT);
         laser.setStrokeWidth(0);
@@ -93,7 +90,8 @@ public class Turret extends Group {
 
         Bullet bullet = new Bullet(60, 720, 3, direction);
         bullet.toBack();
-        ((AnchorPane)getParent()).getChildren().add(bullet);
         Game.addBullet(bullet);
+        ((AnchorPane)getParent()).getChildren().add(bullet);
+
     }
 }

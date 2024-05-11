@@ -24,6 +24,7 @@ public class PlayerShip extends Ship{
     
     @Override
     public void hit(){
+        System.out.println("PlayerShip hit");
         super.hit();
         if(hp == 2){
             setFill(new ImagePattern(new Image(getClass().getResourceAsStream("/images/player-ship-broken-1.png"))));
