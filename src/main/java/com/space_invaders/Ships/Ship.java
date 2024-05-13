@@ -4,7 +4,6 @@ package com.space_invaders.Ships;
 
 import com.space_invaders.Constants;
 import com.space_invaders.Game;
-import com.space_invaders.MainController;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -13,7 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-public abstract class Ship extends Rectangle{
+public class Ship extends Rectangle{
     int hp;
     int moveSpeed;
     int size;
@@ -56,7 +55,11 @@ public abstract class Ship extends Rectangle{
         transition.play();
     }
     
-    public abstract void shoot();
+    public void shoot(){
+        if(Game.isGameEnded){
+            return;
+        }
+    };
 
     public void hit(){
         hp--;

@@ -33,9 +33,11 @@ public class Turret extends Group {
 
         laser = new Rectangle(5, Math.sqrt(Math.pow(Constants.Game.FIELD_HEIGHT, 2) + Math.pow(Constants.Game.FIELD_WIDTH, 2)));
 
+        // Comment this code to make the laser visible
         laser.setFill(Color.TRANSPARENT);
         laser.setStroke(Color.TRANSPARENT);
         laser.setStrokeWidth(0);
+        
         laser.setX(x + base.getFitWidth()/2 - 2.5); 
         laser.setY(y + 25 - laser.getHeight()); 
 
@@ -47,13 +49,18 @@ public class Turret extends Group {
     }
 
     public void checkInterception() {
-        for (Ship ship : Game.ships) {
+        Ship prevShip = null;
+        for (Ship ship : Game.getShips()) {
             if(ship instanceof PlayerShip){
+                continue;
+            }
+            if(ship == prevShip){
                 continue;
             }
             Shape intersection = Shape.intersect(laser, ship);
             if (intersection.getBoundsInLocal().getWidth() != -1) {
                 shoot();
+                prevShip = ship;
             }
         }
     }

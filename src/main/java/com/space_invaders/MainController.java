@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.space_invaders.Game.GameLoop;
-import javafx.animation.AnimationTimer;
-import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -20,7 +18,6 @@ public class MainController {
     @FXML
     private AnchorPane field;
 
-    public static boolean isGameEnded = false;
 
     private List<ImageView> hpImages = new ArrayList<>();
 
@@ -31,7 +28,6 @@ public class MainController {
     private Game game;
     public void initialize() {
         game = new Game(field);
-
         loadBackToManuButton();
 
         loadHeartImages();
@@ -66,11 +62,12 @@ public class MainController {
         backButton.setLayoutX(20);
         backButton.setLayoutY(20);
         backButton.setOnAction(e -> {
-            Game.bullets.clear();
-            Game.ships.clear();
+            game.clearBulletsAndShips();
+            game.stopAllGameLoopsAndTimers();
             field.getChildren().clear(); 
-            gameLoop.stopGame();
+            gameLoop.stop();
             try{
+                Game.isGameEnded = true;
                 App.setRoot("main-menu.fxml");
             }catch(Exception ex){
                 ex.printStackTrace();

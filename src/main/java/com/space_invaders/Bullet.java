@@ -11,8 +11,11 @@ public class Bullet extends Rectangle {
     private int x;
     boolean hasHit = false;
     private int y ;
+    public boolean isActive = true;  
 
-
+    public void deactivate() {
+        isActive = false;  
+    }
     public Bullet(double x, double y, int width, Direction direction) {
         super(x, y, width, width*3); 
         this.width = width; 
@@ -28,7 +31,7 @@ public class Bullet extends Rectangle {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(MainController.isGameEnded){
+                if(Game.isGameEnded){
                     stop();
                     return;
                 }

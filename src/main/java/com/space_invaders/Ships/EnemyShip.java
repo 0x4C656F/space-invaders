@@ -79,8 +79,9 @@ public class EnemyShip extends Ship{
             animateMovement( 0, (double) newY - this.getTranslateY());
         }
     }
-
+    @Override
     public void shoot(){
+        super.shoot();
         if(hp <= 0){
             return;
         }

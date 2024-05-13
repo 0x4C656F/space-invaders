@@ -2,11 +2,9 @@ package com.space_invaders;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javafx.scene.Node;
 import com.space_invaders.Ships.BossShip;
 import com.space_invaders.Ships.EnemyShip;
 import com.space_invaders.Ships.PlayerShip;
@@ -38,14 +36,11 @@ public class Game {
 
     Game(AnchorPane field){
         this.field = field;
+        isGameEnded = false;
+        clearBulletsAndShips();
 
         loadPlayerShip();
         loadTurret();
-
-        if (playerShip == null || turret == null) {
-            System.out.println("Initialization error: Objects not set up correctly.");
-            return;
-        }
 
         field.setFocusTraversable(true);
         field.requestFocus();
@@ -84,22 +79,21 @@ public class Game {
 
         @Override
         public void handle(long now) {
-            if(playerShip.getHp() <= 0) {
-                stopGame();
-                endGame();
-                return;
-            };
             if (now - lastCheckTime > 300_000_000 && isTurretBought  ) { 
                 turret.checkInterception();
                 lastCheckTime = now;
             }
             checkCollision();
+
+            if(playerShip.getHp() <= 0){
+                endGame();
+            }
         }
-        
-        public void stopGame(){
+        @Override
+        public void stop(){
+            super.stop();
             if(this != null && enemySpawnTimer !=null){
                 enemySpawnTimer.stop();
-                this.stop();
             }
             
         }
@@ -117,7 +111,7 @@ public class Game {
     private void spawnRandomEnemyShip() {
         int randomXCoord = (int) (Math.random() * Constants.Game.FIELD_WIDTH);
         int randomInt = (int) (Math.random() * 20);
-        if(randomInt < 18){
+        if(randomInt < 16){
             EnemyShip ship = new StormShip(randomXCoord, -StormShip.size);
             field.getChildren().add(ship);
             ships.add(ship);
@@ -131,7 +125,7 @@ public class Game {
 public void checkCollision() {
     Set<Bullet> bulletsToRemove = new HashSet<>();
     for (Bullet bullet : bullets) {
-        if (bullet.hasHit) continue;
+        if (!bullet.isActive || bullet.hasHit) continue;
 
         for (Ship ship : ships) {
             if (bullet.hasHit) break; 
@@ -147,6 +141,8 @@ public void checkCollision() {
 
                 if ((isEnemyShip && bulletUpOrCustom) || (isPlayerShip && bulletDown)) {
                     System.out.println("Collision detected");
+                    System.out.println("Ship: " + ship);
+                    System.out.println("Bullet: " + bullet);
                     bullet.hasHit = true; 
                     bulletsToRemove.add(bullet);
                     ship.hit();
@@ -154,41 +150,51 @@ public void checkCollision() {
             }
         }
     }
-    field.getChildren().removeAll(bulletsToRemove); 
+   
     bullets.removeAll(bulletsToRemove); 
+    for (Bullet bullet : bulletsToRemove) {
+        if (bullet.getParent() != null) {
+            ((AnchorPane) bullet.getParent()).getChildren().remove(bullet);
+        } else {
+            System.out.println("Attempting to cleanup orphan bullet.");
+        }
+    }
 }
 
     
     
-    public  void removeBullet(Bullet bullet) {
+    public void removeBullet(Bullet bullet) {
         field.getChildren().remove(bullet);
         bullets.remove(bullet);
     }
 
+
     public static void removeBulletStatic(Bullet bullet){
-        AnchorPane parent  = (AnchorPane)  bullet.getParent();
-        if(!bullets.contains(bullet)  ) return;
-        if(parent == null) return;
-        if(!parent.getChildren().contains(bullet)) return;
+        if (!bullets.contains(bullet)) return;
+        if (bullet.getParent() == null) {
+            System.out.println("Attempting to cleanup orphan bullet.");
+        } else {
+            ((AnchorPane)bullet.getParent()).getChildren().remove(bullet);
+        }
         bullets.remove(bullet);
-        parent.getChildren().remove(bullet);
     }
+    
 
     public static void addBullet(Bullet bullet) {
+        if(isGameEnded){
+            return;
+        }
+        System.out.println("Adding bullet to game at: (" + bullet.getX() + ", " + bullet.getY() + ")");
         bullets.add(bullet);
-    }
 
-    public static void removeShip(Ship ship) {
-        if(!ships.contains(ship) ) return;
-        ships.remove(ship);
-        AnchorPane parent = (AnchorPane) ship.getParent();
-        if(parent == null) return;
-        parent.getChildren().remove(ship);
     }
-
     private void endGame(){
-        isGameEnded = true;
-        clear();
+        Game.isGameEnded = true;
+
+        clearBulletsAndShips();
+        stopAllGameLoopsAndTimers();
+
+        field.getChildren().clear();
 
         Label gameOverLabel = new Label("Game Over");
         gameOverLabel.setStyle("-fx-font-size: 32; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -199,7 +205,7 @@ public void checkCollision() {
         restartButton.setLayoutX(Constants.Game.FIELD_WIDTH/2 - 50);
         restartButton.setLayoutY(400);
         restartButton.setOnAction(event -> {
-            isGameEnded = false;
+            Game.isGameEnded = false;
             restartGame();
             
         });
@@ -208,19 +214,46 @@ public void checkCollision() {
         
     }
 
-    private void restartGame(){
+    public static void removeShip(Ship ship) {
+        if(!ships.contains(ship) ) return;
+        ships.remove(ship);
+        AnchorPane parent = (AnchorPane) ship.getParent();
+        if(parent == null) return;
+        parent.getChildren().remove(ship);
+    }
+
+
+
+    public void restartGame(){
         try {
-            App.setRoot("main.fxml");
+            stopAllGameLoopsAndTimers(); 
+            clearBulletsAndShips();      
+            field.getChildren().clear();  
+            App.setRoot("main.fxml");     
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    
+    public void stopAllGameLoopsAndTimers() {
+        if (gameLoop != null) {
+            gameLoop.stop();  
+        }
+        if (enemySpawnTimer != null) {
+            enemySpawnTimer.stop();  
+        }
+        
+    }
 
-    public void clear(){
+    public static List<Ship> getShips(){
+        return ships;
+    }
+
+    public void clearBulletsAndShips(){
+        Game.bullets.clear();
+        Game.ships.clear();
         ships.clear();
         bullets.clear();
-        field.getChildren().clear();
-
     }
 }
     

@@ -5,7 +5,6 @@ import com.space_invaders.Bullet;
 import com.space_invaders.Constants;
 import com.space_invaders.Direction;
 import com.space_invaders.Game;
-import com.space_invaders.MainController;
 
 import javafx.event.EventHandler;
 import javafx.scene.image.Image;
@@ -53,8 +52,9 @@ public class PlayerShip extends Ship{
             event.consume();
         }
     }
-
+    @Override
     public void shoot(){
+        super.shoot();
         if(hp <= 0){
             return;
         }
@@ -62,8 +62,8 @@ public class PlayerShip extends Ship{
         int xCoord = (int) getTranslateX() + size / 2 - bulletWidth/ 2;
         int yCoord = (int) ((int) getTranslateY() + size / 2 - bulletWidth * 2);
         Bullet bullet = new Bullet(xCoord, yCoord,bulletWidth, Direction.UP);
-        Game.addBullet(bullet);
         ((AnchorPane)getParent()).getChildren().add(bullet);
+        Game.addBullet(bullet);
         bullet.toBack();
     }
 
