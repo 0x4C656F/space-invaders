@@ -111,7 +111,7 @@ public class Game {
     private void spawnRandomEnemyShip() {
         int randomXCoord = (int) (Math.random() * Constants.Game.FIELD_WIDTH);
         int randomInt = (int) (Math.random() * 20);
-        if(randomInt < 16){
+        if(randomInt < 18){
             EnemyShip ship = new StormShip(randomXCoord, -StormShip.size);
             field.getChildren().add(ship);
             ships.add(ship);
